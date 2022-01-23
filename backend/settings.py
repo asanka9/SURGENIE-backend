@@ -27,8 +27,8 @@ SECRET_KEY = 'django-insecure-tflb4o^+%(6dj24-hyb@-x(o1e8d91lo0$eg07obi50t7xrg$!
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1'
-    'https://surgenie.herokuapp.com'
+    '127.0.0.1',
+    'surgenie.herokuapp.com'
 ]
 
 
