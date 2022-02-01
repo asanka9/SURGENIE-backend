@@ -1,4 +1,6 @@
 from django.db import models
+from user.models import Surgeon
+from hospital.models import Resource
 
 
 class Surgery(models.Model):
@@ -13,7 +15,9 @@ class Surgery(models.Model):
     end_day = models.DateField()
     month = models.IntegerField()  # Int or char?
     year = models.IntegerField()
+    notes = models.TextField()
 
+    surgeon = models.ForeignKey(Surgeon, on_delete=models.CASCADE)
     # TODO surgeon 1:M relationship
 
 
@@ -24,11 +28,14 @@ class Patient(models.Model):
     email = models.CharField(max_length=50)
     telephone = models.CharField(max_length=10)
 
+    surgery = models.ForeignKey(Surgery, on_delete=models.CASCADE)
     # TODO insert surgery 1:M relationship
 
 
 class SurgeryResource(models.Model):
     amount = models.IntegerField()
 
+    surgeon = models.ForeignKey(Surgeon, on_delete=models.CASCADE)
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
     # TODO insert 1:M surgery, resource relationships
 
