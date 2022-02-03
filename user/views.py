@@ -14,7 +14,8 @@ from rest_framework.decorators import api_view, renderer_classes
 
 from rest_framework import status
 
-from user.models import Account, Nurse, Surgeon, SurgeonSession, TraineeSurgeon, TraineeSurgeonSession, Anesthesiologist
+from user.models import Account, Nurse, Surgeon, SurgeonSession, TraineeSurgeon, TraineeSurgeonSession, \
+    Anesthesiologist, Admin
 
 
 class ProfileView(APIView):
@@ -46,7 +47,6 @@ class CustomAuthToken(ObtainAuthToken):
             'last_name': user.last_name,
             'email': user.email,
             # 'profile_url': profile.profile_url
-
         }, status=status.HTTP_200_OK, exception=False)
 
 
@@ -82,16 +82,90 @@ def verify_token(request):
             #     """
             #     blog_list.append(blog_map)
 
+            # is_medical_staff = models.BooleanField(default=False, null=True)
+            # is_admin_staff = models.BooleanField(default=False, null=True)
+            # role = models.CharField(max_length=20, choices=ROLES, null=True)
+            #
+
             user_data = {
                 'user_id': user.pk,
                 'username': user.username,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'email': user.email,
+                'is_medical_staff': user.is_medical_staff,
+                'is_admin_staff': user.is_admin_staff,
+                'role': user.role
                 # 'profile_url': profile.profile_url,
                 # 'blog_list': blog_list
             }
 
+            return Response(user_data, status=status.HTTP_200_OK, exception=False)
+        else:
+            return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def userInfo(request):
+    if request.method == 'POST':
+        token = JSONParser().parse(request)['key']
+        if (Token.objects.filter(key=token).exists()):
+            tObject = Token.objects.get(key=token)
+            user = tObject.user
+            user_data = {
+                'user_id': user.pk,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'is_medical_staff': user.is_medical_staff,
+                'is_admin_staff': user.is_admin_staff,
+                'role': user.role
+            }
+            user_profile_data = {}
+            if user.is_admin_staff:
+                profile = Admin.objects.get(user=user)
+                user_profile_data['title'] = profile.title
+                user_profile_data['first_name'] = profile.first_name
+                user_profile_data['last_name'] = profile.last_name
+                user_profile_data['address'] = profile.address
+                user_profile_data['email'] = profile.email
+                user_profile_data['level'] = 'admin-0' + str(profile.level)
+            elif user.is_medical_staff:
+                if user.role == 'anesthesiologist':
+                    profile = Anesthesiologist.objects.get(user=user)
+                    user_profile_data['title'] = profile.title
+                    user_profile_data['first_name'] = profile.first_name
+                    user_profile_data['last_name'] = profile.last_name
+                    user_profile_data['address'] = profile.address
+                    user_profile_data['email'] = profile.email
+                    user_profile_data['registration_number'] = profile.email
+                if user.role == 'surgeon':
+                    profile = Surgeon.objects.get(user=user)
+                    user_profile_data['title'] = profile.title
+                    user_profile_data['first_name'] = profile.first_name
+                    user_profile_data['last_name'] = profile.last_name
+                    user_profile_data['address'] = profile.address
+                    user_profile_data['email'] = profile.email
+                    user_profile_data['registration_number'] = profile.registration_number
+                if user.role == 'trainee_surgeon':
+                    profile = TraineeSurgeon.objects.get(user=user)
+                    user_profile_data['title'] = profile.title
+                    user_profile_data['first_name'] = profile.first_name
+                    user_profile_data['last_name'] = profile.last_name
+                    user_profile_data['address'] = profile.address
+                    user_profile_data['email'] = profile.email
+                    user_profile_data['registration_number'] = profile.email
+                if user.role == 'nurse':
+                    profile = Nurse.objects.get(user=user)
+                    user_profile_data['title'] = profile.title
+                    user_profile_data['first_name'] = profile.first_name
+                    user_profile_data['last_name'] = profile.last_name
+                    user_profile_data['address'] = profile.address
+                    user_profile_data['email'] = profile.email
+                    user_profile_data['registration_number'] = profile.email
+            user_data['profile'] = user_profile_data
             return Response(user_data, status=status.HTTP_200_OK, exception=False)
         else:
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
@@ -106,6 +180,7 @@ def registerUser(request):
         print(account)
         account['username'] = account['email']
         try:
+            title = account['title']
             email = account['email']
             first_name = account['first_name']
             last_name = account['last_name']
@@ -114,6 +189,7 @@ def registerUser(request):
             role = account['role']
             username = account['username']
             address = account['address']
+            telephone = account['telephone']
             user = Account.objects.create_user(email=email, first_name=first_name,
                                                last_name=last_name,
                                                is_admin_staff=is_admin_staff, is_medical_staff=is_medical_staff,
@@ -123,22 +199,26 @@ def registerUser(request):
             if is_medical_staff:
                 if role == 'nurse':
                     profile = Nurse.objects.create(
+                        title=title,
                         user=user, first_name=first_name, last_name=last_name, email=email, address=address,
                         registration_number=account['registration_number'],
-                        is_sister=account['is_sister']
+                        is_sister=account['is_sister'], telephone=telephone
                     )
                     profile.save()
                 elif role == 'anesthesiologist':
                     profile = Anesthesiologist.objects.create(
+                        title=title,
                         user=user, first_name=first_name, last_name=last_name, email=email, address=address,
-                        registration_number=account['registration_number']
+                        registration_number=account['registration_number'], telephone=telephone
                     )
                     profile.save()
                 elif role == 'trainee_surgeon':
                     print("Trainee Surgeon is Calling ==========================")
                     profile = TraineeSurgeon.objects.create(
+                        title=title,
                         user=user, first_name=first_name, last_name=last_name, email=email, address=address,
-                        registration_number=account['registration_number'], specialty=account['specialty']
+                        registration_number=account['registration_number'], specialty=account['specialty'],
+                        telephone=telephone
                     )
                     profile.save()
                     for session in account['session']:
@@ -151,8 +231,10 @@ def registerUser(request):
                         session_object.save()
                 elif role == 'surgeon':
                     profile = Surgeon.objects.create(
+                        title=title,
                         user=user, first_name=first_name, last_name=last_name, email=email, address=address,
-                        registration_number=account['registration_number'], specialty=account['specialty']
+                        registration_number=account['registration_number'], specialty=account['specialty'],
+                        telephone=telephone
                     )
                     profile.save()
                     for session in account['session']:
@@ -164,36 +246,76 @@ def registerUser(request):
                         )
                         session_object.save()
             elif is_admin_staff:
-                if role is 'admin-01':
-                    profile = Nurse.objects.create(
+                if role == 'admin-01':
+                    profile = Admin.objects.create(
+                        title=title,
                         user=user, first_name=first_name, last_name=last_name, email=email, address=address,
-                        registration_number=account['registration_number'],
-                        is_sister=account['is_sister']
+                        level=1, telephone=telephone
                     )
                     profile.save()
-                if role is 'admin-02':
-                    profile = Nurse.objects.create(
+                if role == 'admin-02':
+                    profile = Admin.objects.create(
+                        title=title,
                         user=user, first_name=first_name, last_name=last_name, email=email, address=address,
-                        registration_number=account['registration_number'],
-                        is_sister=account['is_sister']
+                        level=2, telephone=telephone
                     )
                     profile.save()
-                if role is 'admin-03':
-                    profile = Nurse.objects.create(
+                if role == 'admin-03':
+                    profile = Admin.objects.create(
+                        title=title,
                         user=user, first_name=first_name, last_name=last_name, email=email, address=address,
-                        registration_number=account['registration_number'],
-                        is_sister=account['is_sister']
+                        level=3, telephone=telephone
                     )
                     profile.save()
-                if role is 'admin-04':
-                    pass
-                if role is 'admin-05':
-                    pass
+                if role == 'admin-04':
+                    profile = Admin.objects.create(
+                        title=title,
+                        user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                        level=4, telephone=telephone
+                    )
+                    profile.save()
+                if role == 'admin-05':
+                    profile = Admin.objects.create(
+                        title=title,
+                        user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                        level=5, telephone=telephone
+                    )
+                    profile.save()
             user.save()
             return Response('valid', status=status.HTTP_200_OK, exception=False)
         except Exception as e:
             print(e)
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_all_medical_staff(request):
+    token = JSONParser().parse(request)['key']
+    if (Token.objects.filter(key=token).exists()):
+        tObject = Token.objects.get(key=token)
+        user = tObject.user
+
+        all_nurse = []
+        all_trainee_surgeon = []
+        all_anesthesiologist = []
+
+        for o in Nurse.objects.all():
+            all_nurse.append(o.title + " " + o.first_name + " " + o.last_name)
+
+        for o in TraineeSurgeon.objects.all():
+            all_trainee_surgeon.append(o.title + " " + o.first_name + " " + o.last_name)
+
+        for o in Anesthesiologist.objects.all():
+            all_anesthesiologist.append(o.title + " " + o.first_name + " " + o.last_name)
+
+        all = {
+            'nurse': all_nurse,
+            'trainee_surgeon': all_trainee_surgeon,
+            'anesthesiologist': all_anesthesiologist
+        }
+
+        return Response(all, status=status.HTTP_200_OK, exception=False)
 
 
 @csrf_exempt

@@ -91,38 +91,14 @@ class Account(AbstractBaseUser):
         return True
 
 
-# class User(models.Model):
-#     first_name = models.CharField(max_length=50)
-#     last_name = models.CharField(max_length=50)
-#     address = models.CharField(max_length=200)
-#     email = models.EmailField(max_length=50)
-#     ROLES = [
-#         ('admin-01', 'Administrator-01'),
-#         ('admin-02', 'Administrator-02'),
-#         ('admin-03', 'Administrator-03'),
-#         ('admin-04', 'Administrator-04'),
-#         ('admin-05', 'Administrator-05'),
-#         ('anesthesiologist', 'Anesthesiologist'),
-#         ('surgeon', 'Surgeon'),
-#         ('trainee_surgeon', 'Trainee Surgeon'),
-#         ('nurse', 'Nurse'),
-#     ]
-#     role = models.CharField(max_length=50, choices=ROLES)
-#
-#     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, null=True)
-#
-#     # TODO insert hospital 1:M relationship
-#
-#     class Meta:
-#         abstract = True
-
-
 class UserProfile(models.Model):
     user = models.OneToOneField(Account, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     address = models.CharField(max_length=200)
     email = models.EmailField(max_length=50)
+    telephone = models.CharField(max_length=20)
 
 
 class Developer(UserProfile):
