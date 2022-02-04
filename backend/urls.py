@@ -38,5 +38,8 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('user/', include('user.urls')),
     path('team/', include('team.urls')),
+    path('surgery/', include('surgery.urls')),
+    path('booked/', include('booked.urls')),
+    path('hospital/', include('hospital.urls')),
     path('admin/', admin.site.urls),
 ]

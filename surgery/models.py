@@ -27,6 +27,18 @@ class Patient(models.Model):
     address = models.CharField(max_length=200)
     email = models.CharField(max_length=50)
     telephone = models.CharField(max_length=10)
+    age = models.IntegerField()
+    gender = models.IntegerField()
+    weight = models.IntegerField()
+    height = models.IntegerField()
+    cancer = models.IntegerField()
+    cvd = models.IntegerField()
+    dementia = models.IntegerField()
+    diabetes = models.IntegerField()
+    digestive = models.IntegerField()
+    osteoarthritis = models.IntegerField()
+    pylogical = models.IntegerField()
+    pulmonary = models.IntegerField()
 
     surgery = models.ForeignKey(Surgery, on_delete=models.CASCADE)
     # TODO insert surgery 1:M relationship

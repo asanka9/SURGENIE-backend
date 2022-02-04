@@ -1,4 +1,6 @@
 from django.db import models
+
+from surgery.models import Surgery
 from user.models import Surgeon, Nurse, TraineeSurgeon
 from hospital.models import Resource
 
@@ -12,6 +14,8 @@ class Booked(models.Model):
     month = models.IntegerField()
     year = models.IntegerField()
     day = models.DateField()
+
+    surgery = models.ForeignKey(Surgery, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
