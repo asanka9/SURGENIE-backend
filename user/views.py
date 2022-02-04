@@ -131,6 +131,7 @@ def userInfo(request):
                 user_profile_data['last_name'] = profile.last_name
                 user_profile_data['address'] = profile.address
                 user_profile_data['email'] = profile.email
+                user_profile_data['telephone'] = profile.telephone
                 user_profile_data['level'] = 'admin-0' + str(profile.level)
             elif user.is_medical_staff:
                 if user.role == 'anesthesiologist':
@@ -148,6 +149,7 @@ def userInfo(request):
                     user_profile_data['last_name'] = profile.last_name
                     user_profile_data['address'] = profile.address
                     user_profile_data['email'] = profile.email
+                    user_profile_data['telephone'] = profile.telephone
                     user_profile_data['registration_number'] = profile.registration_number
                 if user.role == 'trainee_surgeon':
                     profile = TraineeSurgeon.objects.get(user=user)
@@ -286,6 +288,122 @@ def registerUser(request):
         except Exception as e:
             print(e)
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def updateUser(request):
+    if request.method == 'POST':
+        request_data = JSONParser().parse(request)
+        token = request_data['key']
+        account = request_data['user']
+
+        if (Token.objects.filter(key=token).exists()):
+            tObject = Token.objects.get(key=token)
+            user = tObject.user
+            try:
+                title = account['title']
+                email = account['email']
+                first_name = account['first_name']
+                last_name = account['last_name']
+                address = account['address']
+                telephone = account['telephone']
+                print('helloooooooooooooooooooooooooooo')
+                print(user.role)
+                if user.is_medical_staff:
+                    if user.role == 'nurse':
+                        Nurse.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            registration_number=account['registration_number'],
+                            is_sister=account['is_sister'], telephone=telephone
+                        )
+                    elif user.role == 'anesthesiologist':
+                        Anesthesiologist.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            registration_number=account['registration_number'], telephone=telephone
+                        )
+                    elif user.role == 'trainee_surgeon':
+                        TraineeSurgeon.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            registration_number=account['registration_number'], specialty=account['specialty'],
+                            telephone=telephone
+                        )
+                        profile = TraineeSurgeon.objects.get(user=user)
+                        TraineeSurgeonSession.objects.filter(surgeon=profile).delete()
+                        for session in account['session']:
+                            times = session['session'].split('-')
+                            day = session['day']
+                            session_object = TraineeSurgeonSession.objects.create(
+                                trainee_surgeon=profile,
+                                day=day, start_time=times[0], end_time=times[1]
+                            )
+                            session_object.save()
+                    elif user.role == 'surgeon':
+                        Surgeon.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            registration_number=account['registration_number'], specialty=account['specialty'],
+                            telephone=telephone
+                        )
+                        profile = Surgeon.objects.get(user=user)
+                        SurgeonSession.objects.filter(surgeon=profile).delete()
+                        for session in account['session']:
+                            times = session['session'].split('-')
+                            day = session['day']
+                            session_object = SurgeonSession.objects.create(
+                                surgeon=profile,
+                                day=day, start_time=times[0], end_time=times[1]
+                            )
+                            session_object.save()
+                elif user.is_admin_staff:
+                    if user.role == 'admin-01':
+                        Admin.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            level=1, telephone=telephone
+                        )
+                    if user.role == 'admin-02':
+                        Admin.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            level=2, telephone=telephone
+                        )
+                    if user.role == 'admin-03':
+                        Admin.objects.filter(user=user).update(
+                            title=title,
+                            first_name=first_name, last_name=last_name, email=email, address=address,
+                            level=3, telephone=telephone
+                        )
+                    if user.role == 'admin-04':
+                        Admin.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            level=4, telephone=telephone
+                        )
+                    if user.role == 'admin-05':
+                        Admin.objects.filter(user=user).update(
+                            title=title,
+                            user=user, first_name=first_name, last_name=last_name, email=email, address=address,
+                            level=5, telephone=telephone
+                        )
+                return Response('valid', status=status.HTTP_200_OK, exception=False)
+            except Exception as e:
+                print(e)
+                return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
+
+
+
+
+
+
+
+
+
+
+
 
 
 @csrf_exempt

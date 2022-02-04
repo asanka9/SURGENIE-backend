@@ -4,15 +4,11 @@ from hospital.models import Resource
 
 
 class Surgery(models.Model):
-    name = models.CharField(max_length=150)
     start_minute = models.IntegerField()
     end_minute = models.IntegerField()
     start_hour = models.IntegerField()
     end_hour = models.IntegerField()
-    start_date = models.IntegerField()
-    end_date = models.IntegerField()
-    start_day = models.DateField()
-    end_day = models.DateField()
+    date = models.IntegerField()
     month = models.IntegerField()  # Int or char?
     year = models.IntegerField()
     notes = models.TextField()

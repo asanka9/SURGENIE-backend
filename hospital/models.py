@@ -20,7 +20,6 @@ class Theater(models.Model):
 
 class Resource(models.Model):
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=50)
     amount = models.IntegerField()
     availability = models.BooleanField()
 
@@ -28,12 +27,12 @@ class Resource(models.Model):
         ('ml', 'Milliliters'),
         ('mg', 'Milligrams'),
         ('pcs', 'Pieces'),
+        ('unit', 'Units'),
     ]
 
     unit = models.CharField(max_length=10, choices=UNITS, default=None)
     # TODO insert unit choices
 
-    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, default=None)
 
 
 class SurgeryClick(models.Model):
