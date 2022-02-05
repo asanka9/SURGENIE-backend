@@ -11,7 +11,11 @@ class Surgery(models.Model):
     date = models.IntegerField()
     month = models.IntegerField()  # Int or char?
     year = models.IntegerField()
-    notes = models.TextField()
+    # Results
+    predicted_time = models.IntegerField()
+    estimated_time = models.IntegerField()
+    real_time = models.IntegerField(blank=True)
+    is_completed = models.BooleanField(default=False,blank=True)
 
     surgeon = models.ForeignKey(Surgeon, on_delete=models.CASCADE)
     # TODO surgeon 1:M relationship
@@ -23,6 +27,8 @@ class Patient(models.Model):
     address = models.CharField(max_length=200)
     email = models.CharField(max_length=50)
     telephone = models.CharField(max_length=10)
+    notes = models.TextField(default='')
+
     age = models.IntegerField()
     gender = models.IntegerField()
     weight = models.IntegerField()

@@ -4,7 +4,9 @@ from team import views
 
 urlpatterns = [
     path('team-detail/', views.get_my_team_details),
-    path('create-team/', views.create_team)
+    path('create-team/', views.create_team),
+    path('book-team/', views.create_booked_team)
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

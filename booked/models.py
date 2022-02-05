@@ -1,7 +1,7 @@
 from django.db import models
 
 from surgery.models import Surgery
-from user.models import Surgeon, Nurse, TraineeSurgeon
+from user.models import Surgeon, Nurse, TraineeSurgeon, Anesthesiologist
 from hospital.models import Resource
 
 
@@ -13,7 +13,6 @@ class Booked(models.Model):
     date = models.IntegerField()
     month = models.IntegerField()
     year = models.IntegerField()
-    day = models.DateField()
 
     surgery = models.ForeignKey(Surgery, on_delete=models.CASCADE)
 
@@ -26,13 +25,17 @@ class BookedResource(Booked):
     # TODO resource 1:M relationship
 
 
+class BookedAnesthesiologist(Booked):
+    anesthesiologist = models.ForeignKey(Anesthesiologist, on_delete=models.CASCADE)
+    # TODO resource 1:M relationship
+
 class BookedSurgeon(Booked):
     surgeon = models.ForeignKey(Surgeon, on_delete=models.CASCADE)
     # TODO surgeon 1:M relationship
 
 
 class BookedTraineeSurgeon(Booked):
-    surgeon = models.ForeignKey(TraineeSurgeon, on_delete=models.CASCADE)
+    trainee_surgeon = models.ForeignKey(TraineeSurgeon, on_delete=models.CASCADE)
     # TODO trainee 1:M relationship
 
 
