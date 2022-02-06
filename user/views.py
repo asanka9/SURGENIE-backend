@@ -400,6 +400,17 @@ def updateUser(request):
 
 
 
+@csrf_exempt
+@api_view(['POST'])
+def get_user_type(request):
+    token = JSONParser().parse(request)['key']
+    if (Token.objects.filter(key=token).exists()):
+        tObject = Token.objects.get(key=token)
+        user = tObject.user
+        if user.is_admin_staff:
+            return Response('admin', status=status.HTTP_200_OK, exception=False)
+        else:
+            return Response(user.role, status=status.HTTP_200_OK, exception=False)
 
 
 
