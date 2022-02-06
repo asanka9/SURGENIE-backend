@@ -14,6 +14,78 @@ from user.models import Surgeon, Nurse, TraineeSurgeon, Anesthesiologist
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 import joblib
+import calendar
+
+@csrf_exempt
+@api_view(['POST'])
+def set_surgery_complete(request):
+    if request.method == 'POST':
+        request_data = JSONParser().parse(request)
+        token = request_data['key']
+        id = request_data['id']
+
+        if Token.objects.filter(key=token).exists():
+            tObject = Token.objects.get(key=token)
+            user = tObject.user
+            surgeon = Surgeon.objects.get(user=user)
+            Surgery.objects.filter(id = id).update(is_completed=True)
+        return Response("valid", status=status.HTTP_200_OK, exception=False)
+
+
+
+
+@csrf_exempt
+@api_view(['POST'])
+def get_surgeris(request):
+    if request.method == 'POST':
+        request_data = JSONParser().parse(request)
+        token = request_data['key']
+        if Token.objects.filter(key=token).exists():
+            tObject = Token.objects.get(key=token)
+            user = tObject.user
+            surgeon = Surgeon.objects.get(user=user)
+            surgeries = []
+            for surgery in Surgery.objects.filter(surgeon=surgeon):
+
+                s = {
+                        'id': surgery.id,
+                        'Name': 'Knee Surgery',
+                        'Time': get_time_text(surgery.start_hour, surgery.start_minute, surgery.end_hour,
+                                                   surgery.end_minute),
+
+                        'Day': calendar.month_abbr[surgery.month + 1] + " " + str(surgery.date),
+                        'Completed': surgery.is_completed,
+
+                    }
+                if Patient.objects.filter(surgery=surgery).exists():
+                    patient = Patient.objects.get(surgery=surgery)
+                    s['patient_details'] = {
+                            'patient_name': patient.first_name + ' ' + patient.last_name,
+                            'email': patient.email,
+                            'notes': patient.notes
+                        }
+                    surgeries.append(s)
+                else:
+                    s['patient_details'] = {}
+                    surgeries.append(s)
+            return Response(surgeries, status=status.HTTP_200_OK, exception=False)
+
+
+def get_time_text(start_hour, start_minute, end_hour, end_minute):
+    text_1 = ''
+    text_2 = ''
+
+    if start_hour <= 12:
+        text_1 = str(start_hour) + " : " + str(start_minute) + " AM"
+    else:
+        text_1 = str(start_hour - 12) + " : " + str(start_minute) + " PM"
+
+    if end_hour <= 12:
+        text_2 = str(end_hour) + " : " + str(end_minute) + " AM"
+    else:
+        text_2 = str(end_hour - 12) + " : " + str(end_minute) + " PM"
+
+    return text_1 + " - " + text_2
 
 
 @csrf_exempt
@@ -31,24 +103,6 @@ def get_predicted_results(request):
             return Response(data, status=status.HTTP_200_OK, exception=False)
         else:
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
-
-
-# @csrf_exempt
-# @api_view(['POST'])
-# def create_surgery(request):
-#     if request.method == 'POST':
-#         request_data = JSONParser().parse(request)
-#         token = request_data['key']
-#         if Token.objects.filter(key=token).exists():
-#             tObject = Token.objects.get(key=token)
-#             user = tObject.user
-#             surgeon = Surgeon.objects.get(user=user)
-#             Surgery.objects.create()
-#
-#             data = {}
-#             return Response(data, status=status.HTTP_200_OK, exception=False)
-#         else:
-#             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
 
 
 @csrf_exempt
@@ -358,7 +412,6 @@ def create_surgery_with_schedule(request):
                         else:
                             break
 
-
             # Anesthelogist
             for t_anesth in FavAnesthesiologist.objects.filter(surgeon=surgeon_profile):
                 if BookedAnesthesiologist.objects.filter(anesthesiologist=t_anesth.anesthesiologist, date=date,
@@ -381,7 +434,6 @@ def create_surgery_with_schedule(request):
                     else:
                         break
 
-
             while k < num_anesthelogist:
 
                 for t_anesth in Anesthesiologist.objects.all():
@@ -390,8 +442,10 @@ def create_surgery_with_schedule(request):
                         if BookedAnesthesiologist.objects.get(anesthesiologist=t_anesth, date=date,
                                                               month=month, year=year).end_hour < start_hour:
                             if k < num_anesthelogist:
-                                if (t_anesth.title + ' ' + t_anesth.first_name + ' ' + t_anesth.last_name) not in anesthelogist_list:
-                                    anesthelogist_list.append(t_anesth.title + ' ' + t_anesth.first_name + ' ' + t_anesth.last_name)
+                                if (
+                                        t_anesth.title + ' ' + t_anesth.first_name + ' ' + t_anesth.last_name) not in anesthelogist_list:
+                                    anesthelogist_list.append(
+                                        t_anesth.title + ' ' + t_anesth.first_name + ' ' + t_anesth.last_name)
                                     print(k)
                                     k = k + 1
                             else:
@@ -436,6 +490,3 @@ def create_surgery_with_schedule(request):
             return Response(all, status=status.HTTP_200_OK, exception=False)
         else:
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
-
-
-

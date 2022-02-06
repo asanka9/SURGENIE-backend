@@ -8,6 +8,9 @@ urlpatterns = [
     path('create-surgery/', views.create_surgery_with_schedule),
     path('predict-time/', views.get_predicted_time),
 
+    path('surgeries-list/', views.get_surgeris),
+    path('update/', views.set_surgery_complete),
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
