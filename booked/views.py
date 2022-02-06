@@ -15,7 +15,6 @@ from rest_framework.authtoken.models import Token
 @csrf_exempt
 @api_view(['POST'])
 def get_booked_detail_date_range(request):
-    print('HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO')
     if request.method == 'POST':
         request_data = JSONParser().parse(request)
         token = request_data['key']
@@ -290,14 +289,14 @@ def get_booked_detail_date(request):
             anesthesiologist_data = []
 
             if user.is_admin_staff:
-
+                print('CAll here')
                 for surgery in Surgery.objects.filter(date=date, month=month, year=year):
-                    patient = Patient.objects.get(surgery=surgery)
-                    patient_detail = {
-                        'patient_name': patient.first_name + ' ' + patient.last_name,
-                        'email': patient.email,
-                        'telephone': patient.telephone
-                    }
+                    # patient = Patient.objects.get(surgery=surgery)
+                    # patient_detail = {
+                    #     'patient_name': patient.first_name + ' ' + patient.last_name,
+                    #     'email': patient.email,
+                    #     'telephone': patient.telephone
+                    # }
 
                     admin_data.append({
                         'start_hour': surgery.start_hour,
@@ -306,8 +305,9 @@ def get_booked_detail_date(request):
                         'end_minute': surgery.end_minute,
                         'time_text': get_time_text(start_hour=surgery.start_hour, start_minute=surgery.start_minute,
                                                    end_hour=surgery.end_hour, end_minute=surgery.end_minute),
-                        'patient_detail': patient_detail
+                        'patient_detail': {}
                     })
+                print(admin_data)
                 return Response({'user': 'admin', 'data': admin_data}, status=status.HTTP_200_OK, exception=False)
             elif user.is_medical_staff:
                 if user.role == 'surgeon':
