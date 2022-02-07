@@ -49,7 +49,6 @@ class CustomAuthToken(ObtainAuthToken):
             # 'profile_url': profile.profile_url
         }, status=status.HTTP_200_OK, exception=False)
 
-
 @csrf_exempt
 @api_view(['POST'])
 def verify_token(request):
@@ -104,7 +103,6 @@ def verify_token(request):
         else:
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
 
-
 @csrf_exempt
 @api_view(['POST'])
 def userInfo(request):
@@ -141,7 +139,8 @@ def userInfo(request):
                     user_profile_data['last_name'] = profile.last_name
                     user_profile_data['address'] = profile.address
                     user_profile_data['email'] = profile.email
-                    user_profile_data['registration_number'] = profile.email
+                    user_profile_data['telephone'] = profile.telephone
+                    user_profile_data['registration_number'] = profile.registration_number
                 if user.role == 'surgeon':
                     profile = Surgeon.objects.get(user=user)
                     user_profile_data['title'] = profile.title
@@ -150,6 +149,7 @@ def userInfo(request):
                     user_profile_data['address'] = profile.address
                     user_profile_data['email'] = profile.email
                     user_profile_data['telephone'] = profile.telephone
+                    user_profile_data['speciality'] = profile.specialty
                     user_profile_data['registration_number'] = profile.registration_number
                 if user.role == 'trainee_surgeon':
                     profile = TraineeSurgeon.objects.get(user=user)
@@ -157,21 +157,24 @@ def userInfo(request):
                     user_profile_data['first_name'] = profile.first_name
                     user_profile_data['last_name'] = profile.last_name
                     user_profile_data['address'] = profile.address
+                    user_profile_data['telephone'] = profile.telephone
                     user_profile_data['email'] = profile.email
-                    user_profile_data['registration_number'] = profile.email
+                    user_profile_data['speciality'] = profile.specialty
+                    user_profile_data['registration_number'] = profile.registration_number
                 if user.role == 'nurse':
                     profile = Nurse.objects.get(user=user)
                     user_profile_data['title'] = profile.title
                     user_profile_data['first_name'] = profile.first_name
                     user_profile_data['last_name'] = profile.last_name
                     user_profile_data['address'] = profile.address
+                    user_profile_data['telephone'] = profile.telephone
                     user_profile_data['email'] = profile.email
-                    user_profile_data['registration_number'] = profile.email
+                    user_profile_data['is_sister'] = profile.is_sister
+                    user_profile_data['registration_number'] = profile.registration_number
             user_data['profile'] = user_profile_data
             return Response(user_data, status=status.HTTP_200_OK, exception=False)
         else:
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
-
 
 @csrf_exempt
 @api_view(['POST'])
@@ -315,8 +318,8 @@ def updateUser(request):
                         Nurse.objects.filter(user=user).update(
                             title=title,
                             user=user, first_name=first_name, last_name=last_name, email=email, address=address,
-                            registration_number=account['registration_number'],
-                            is_sister=account['is_sister'], telephone=telephone
+                            registration_number=account['registration_number']
+                           , telephone=telephone
                         )
                     elif user.role == 'anesthesiologist':
                         Anesthesiologist.objects.filter(user=user).update(
@@ -395,11 +398,6 @@ def updateUser(request):
                 return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
 
 
-
-
-
-
-
 @csrf_exempt
 @api_view(['POST'])
 def get_user_type(request):
@@ -407,14 +405,11 @@ def get_user_type(request):
     if (Token.objects.filter(key=token).exists()):
         tObject = Token.objects.get(key=token)
         user = tObject.user
+        name = user.first_name + " " + user.last_name
         if user.is_admin_staff:
-            return Response('admin', status=status.HTTP_200_OK, exception=False)
+            return Response({'role': 'admin', 'name': name}, status=status.HTTP_200_OK, exception=False)
         else:
-            return Response(user.role, status=status.HTTP_200_OK, exception=False)
-
-
-
-
+            return Response({'role': user.role, 'name': name}, status=status.HTTP_200_OK, exception=False)
 
 
 @csrf_exempt

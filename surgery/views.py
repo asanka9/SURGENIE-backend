@@ -200,8 +200,18 @@ def get_predicted_time(request):
 
             X = [[cancer, cvd, dementia, diabetes, digestive, osteoarthritis, pylogical, pulmonary]]
             predicted_result = duration_predict(age, X)
+            time = predicted_result[0]
 
-            return Response(int(predicted_result[0]), status=status.HTTP_200_OK, exception=False)
+            hours = int(time)
+            minutes = (time * 60) % 60
+            seconds = (time * 3600) % 60
+
+            data = {
+                'time':time,
+                'time_text': str(hours) + ' Hr  '+ str(int(minutes))+ ' Min'
+            }
+
+            return Response(data, status=status.HTTP_200_OK, exception=False)
         else:
             return Response('invalid', status=status.HTTP_400_BAD_REQUEST, exception=True)
 
@@ -246,26 +256,6 @@ def create_surgery_with_schedule(request):
             surgery_details = request_data['surgery_details']
             surgery_team_details = request_data['surgery_team_details']
 
-            """ 
-                start_minute = models.IntegerField()
-                end_minute = models.IntegerField()
-                start_hour = models.IntegerField()
-                end_hour = models.IntegerField()
-                date = models.IntegerField()
-                month = models.IntegerField()  # Int or char?
-                year = models.IntegerField()
-                notes = models.TextField()
-                surgeon = models.ForeignKey(Surgeon, on_delete=models.CASCADE)
-
-            """
-
-            print('##############################################################')
-            print(patient_details)
-            print('###########################################################')
-            print(surgery_details)
-            print('###########################################################')
-            print(surgery_team_details)
-
             surgery = Surgery.objects.create(
                 start_minute=surgery_details['start_minute'],
                 end_minute=surgery_details['end_minute'],
@@ -280,11 +270,6 @@ def create_surgery_with_schedule(request):
                 surgeon=surgeon_profile
             )
             surgery.save()
-
-            print("****************************************")
-
-            print(type(surgery_details['date']))
-
             patient = Patient.objects.create(
                 first_name=patient_details['first_name'],
                 last_name=patient_details['last_name'],
@@ -308,12 +293,12 @@ def create_surgery_with_schedule(request):
             )
             patient.save()
 
-            num_trainee_surgeon = 5
-            num_anesthelogist = 3
+            num_trainee_surgeon = 1
+            num_anesthelogist = 1
             num_nurse = 1
 
-            i = 15
-            j = 15
+            i = 0
+            j = 0
             k = 0
 
             trainee_surgeons = []
@@ -326,7 +311,7 @@ def create_surgery_with_schedule(request):
             start_hour = int(surgery_details['start_hour'])
 
             for t_surgeon in FavTraineeSurgeon.objects.filter(surgeon=surgeon_profile):
-                print("CALL")
+                print("Trainee Surgeon 01")
                 if BookedTraineeSurgeon.objects.filter(trainee_surgeon=t_surgeon.trainee_surgeon, date=date,
                                                        month=month, year=year).exists():
                     if BookedTraineeSurgeon.objects.get(trainee_surgeon=t_surgeon.trainee_surgeon, date=date,
@@ -344,9 +329,10 @@ def create_surgery_with_schedule(request):
                         i = i + 1
                     else:
                         break
-
+            print("I valueeeeeeeeeeeeeeeeeeee")
+            print(i)
             while i < num_trainee_surgeon:
-                print('call 2')
+                print("Trainee Surgeon 02")
                 for t_surgeon in TraineeSurgeon.objects.all():
                     if BookedTraineeSurgeon.objects.filter(trainee_surgeon=t_surgeon, date=date,
                                                            month=month, year=year).exists():
@@ -372,6 +358,7 @@ def create_surgery_with_schedule(request):
 
             # Get fav Nurse
             for t_nurse in FavNurse.objects.filter(surgeon=surgeon_profile):
+                print("Nurse 01")
                 if BookedNurse.objects.filter(nurse=t_nurse.nurse, date=date, month=month, year=year).exists():
                     if BookedNurse.objects.get(nurse=t_nurse.nurse, date=date, month=month,
                                                year=year).end_hour < start_hour:
@@ -390,6 +377,7 @@ def create_surgery_with_schedule(request):
                         break
 
             while j < num_nurse:
+                print("Nurse 02")
                 for t_nurse in Nurse.objects.all():
                     if BookedNurse.objects.filter(nurse=t_nurse, date=date,
                                                   month=month, year=year).exists():
@@ -414,9 +402,10 @@ def create_surgery_with_schedule(request):
 
             # Anesthelogist
             for t_anesth in FavAnesthesiologist.objects.filter(surgeon=surgeon_profile):
+                print("Anesthelogist 01")
+
                 if BookedAnesthesiologist.objects.filter(anesthesiologist=t_anesth.anesthesiologist, date=date,
                                                          month=month, year=year).exists():
-                    print('XXXXXXXXXXXXXXXXXX')
                     if BookedAnesthesiologist.objects.get(anesthesiologist=t_anesth.anesthesiologist, date=date,
                                                           month=month, year=year).end_hour < start_hour:
                         if k < num_anesthelogist:
@@ -435,6 +424,7 @@ def create_surgery_with_schedule(request):
                         break
 
             while k < num_anesthelogist:
+                print("Anesthelogist 02")
 
                 for t_anesth in Anesthesiologist.objects.all():
                     if BookedAnesthesiologist.objects.filter(anesthesiologist=t_anesth, date=date,
@@ -446,7 +436,6 @@ def create_surgery_with_schedule(request):
                                         t_anesth.title + ' ' + t_anesth.first_name + ' ' + t_anesth.last_name) not in anesthelogist_list:
                                     anesthelogist_list.append(
                                         t_anesth.title + ' ' + t_anesth.first_name + ' ' + t_anesth.last_name)
-                                    print(k)
                                     k = k + 1
                             else:
                                 break

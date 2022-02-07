@@ -144,7 +144,7 @@ def create_booked_team(request):
             user_profile_data = {}
             profile = Surgeon.objects.get(user=user)
 
-            surgery = Surgery.objects.get(surgeon=profile,start_hour=start_hour,date=date,month=month,year=year)
+            surgery = Surgery.objects.filter(surgeon=profile,start_hour=start_hour,date=date,month=month,year=year)[0]
 
             for trainee_surgeon in fav_team['trainee_surgeon']:
                 trainee_surgeon_names = trainee_surgeon.split(' ')
@@ -156,7 +156,6 @@ def create_booked_team(request):
                 o.save()
             for anesthesiologists in fav_team['anesthesiologists']:
                 anesthesiologists_names = anesthesiologists.split(' ')
-                print(anesthesiologists_names)
                 anesthesiologists = Anesthesiologist.objects.get(first_name=anesthesiologists_names[1], last_name=anesthesiologists_names[2])
                 o = BookedAnesthesiologist.objects.create(
                     surgery=surgery, anesthesiologist=anesthesiologists,start_minute=start_minute, start_hour=start_hour,
