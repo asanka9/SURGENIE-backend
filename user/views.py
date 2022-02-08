@@ -405,7 +405,27 @@ def get_user_type(request):
     if (Token.objects.filter(key=token).exists()):
         tObject = Token.objects.get(key=token)
         user = tObject.user
-        name = user.first_name + " " + user.last_name
+        name = ''
+        if user.is_medical_staff:
+            if user.role == 'nurse':
+                n = Nurse.objects.get(user=user)
+                name = n.first_name +" "+n.last_name
+            elif user.role == 'anesthesiologist':
+
+                n = Anesthesiologist.objects.get(user=user)
+                name = n.first_name +" "+n.last_name
+            elif user.role == 'trainee_surgeon':
+
+                n = TraineeSurgeon.objects.get(user=user)
+                name = n.first_name + " " + n.last_name
+            elif user.role == 'surgeon':
+
+                n = Surgeon.objects.get(user=user)
+                name = n.first_name + " " + n.last_name
+        elif user.is_admin_staff:
+            n = Admin.objects.get(user=user)
+            name = n.first_name + " " + n.last_name
+
         if user.is_admin_staff:
             return Response({'role': 'admin', 'name': name}, status=status.HTTP_200_OK, exception=False)
         else:
