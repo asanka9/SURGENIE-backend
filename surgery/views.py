@@ -293,9 +293,9 @@ def create_surgery_with_schedule(request):
             )
             patient.save()
 
-            num_trainee_surgeon = 1
-            num_anesthelogist = 1
-            num_nurse = 1
+            num_trainee_surgeon = 2
+            num_anesthelogist = 2
+            num_nurse = 5
 
             i = 0
             j = 0
